@@ -44,7 +44,6 @@ class Application
 
     public function run($arguments): int
     {
-
         if (count($arguments) < 4) {
             $this->printUsage(isset($arguments[0]) ? $arguments[0] : '');
 
@@ -58,11 +57,13 @@ class Application
             $body = $this->readBodyFromStdIn();
         }
 
+        $recipients = $this->prepareRecipients($recipientData);
 
-        $this->printInfo($recipientData, $sender, $subject, $body);
+
+        $this->printInfo($recipients, $sender, $subject, $body);
 
         $this->prepareEnvironment();
-        $success = $this->sendEmail($this->prepareRecipients($recipientData), $sender, $subject, $body);
+        $success = $this->sendEmail($recipients, $sender, $subject, $body);
 
         return $success ? 0 : 1;
     }
@@ -113,15 +114,15 @@ class Application
     }
 
     /**
-     * @param string $recipient
+     * @param string[] $recipients
      * @param string $sender
      * @param string $subject
      * @param string $body
      */
-    private function printInfo(string $recipient, string $sender, string $subject, string $body)
+    private function printInfo(array $recipients, string $sender, string $subject, string $body)
     {
         $this->println('Send email "%s"', $subject);
-        $this->println('to          %s', $recipient);
+        $this->println('to          %s', implode(', ', $recipients));
         $this->println('from        %s', $sender);
         $this->println('with body length %d', strlen($body));
     }
