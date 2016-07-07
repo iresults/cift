@@ -64,8 +64,6 @@ class Application
         $this->prepareEnvironment();
         $success = $this->sendEmail($this->prepareRecipients($recipientData), $sender, $subject, $body);
 
-        $this->println('fin');
-
         return $success ? 0 : 1;
     }
 
@@ -90,6 +88,8 @@ class Application
 
             return false;
         }
+
+        $this->println('Success! No errors');
 
         return true;
     }
