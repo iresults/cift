@@ -1,22 +1,25 @@
 {
-    "name": "iresults/cift",
-    "description": "Swift Mailer CLI",
-    "require": {
-        "swiftmailer/swiftmailer": "^5.4"
-    },
-    "require-dev": {
-        "cundd/test-flight": "^0.2.5"
-    },
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Daniel Corn",
-            "email": "cod@iresults.li"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "Iresults\\Cift\\": "src/"
-        }
+  "name": "iresults/cift",
+  "description": "Swift Mailer CLI",
+  "require": {
+    "swiftmailer/swiftmailer": "^5.4"
+  },
+  "require-dev": {
+    "cundd/test-flight": "^0.2.5"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Daniel Corn",
+      "email": "cod@iresults.li"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Iresults\\Cift\\": "src/"
+    }
+  },
+  "bin": [
+    "bin/cift"
+  ]
 }
