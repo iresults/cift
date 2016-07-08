@@ -77,7 +77,7 @@ class Application
      */
     private function sendEmail(array $recipients, string $sender, string $subject, string $body): bool
     {
-        $contentType = strpos($body, '<') !== false ? 'text/html' : null;
+        $contentType = $this->getSendAsHtml($body) ? 'text/html' : null;
         $message = (new Swift_Message())
             ->setSubject($subject)
             ->setFrom(array($sender => $sender))
@@ -115,16 +115,20 @@ class Application
 
     /**
      * @param string[] $recipients
-     * @param string $sender
-     * @param string $subject
-     * @param string $body
+     * @param string   $sender
+     * @param string   $subject
+     * @param string   $body
      */
     private function printInfo(array $recipients, string $sender, string $subject, string $body)
     {
         $this->println('Send email "%s"', $subject);
         $this->println('to          %s', implode(', ', $recipients));
         $this->println('from        %s', $sender);
-        $this->println('with body length %d', strlen($body));
+        $this->println(
+            'with body length %d%s',
+            strlen($body),
+            $this->getSendAsHtml($body) ? ' sent as HTML' : ''
+        );
     }
 
     /**
@@ -223,5 +227,14 @@ class Application
         foreach ($failures as $failure) {
             $this->println('- %s', $failure);
         }
+    }
+
+    /**
+     * @param string $body
+     * @return bool
+     */
+    private function getSendAsHtml(string $body):bool
+    {
+        return strpos($body, '<') !== false;
     }
 }
