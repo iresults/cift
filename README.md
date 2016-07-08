@@ -1,7 +1,7 @@
 Cift
 ====
 
-> Send emails.
+> Send emails. Nothing else.
 
 Unce run:
 
