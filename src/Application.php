@@ -40,26 +40,23 @@ use Swift_Transport;
 
 class Application
 {
+    /**
+     * @var string
+     */
     private $scriptPath;
 
-    public function run($arguments): int
+    /**
+     * @param array $arguments
+     * @return int
+     */
+    public function run(array $arguments): int
     {
         if (count($arguments) < 4) {
             $this->printUsage(isset($arguments[0]) ? $arguments[0] : '');
 
             return 1;
         }
-
-        if (count($arguments) >= 5) {
-            list($this->scriptPath, $recipientData, $sender, $subject, $body) = $arguments;
-        } else {
-            list($this->scriptPath, $recipientData, $sender, $subject,) = $arguments;
-            $body = $this->readBodyFromStdIn();
-        }
-
-        $recipients = $this->prepareRecipients($recipientData);
-
-
+        list($sender, $subject, $body, $recipients) = $this->parseArguments($arguments);
         $this->printInfo($recipients, $sender, $subject, $body);
 
         $this->prepareEnvironment();
@@ -236,5 +233,23 @@ class Application
     private function getSendAsHtml(string $body):bool
     {
         return strpos($body, '<') !== false;
+    }
+
+    /**
+     * @param array $arguments
+     * @return array
+     */
+    private function parseArguments(array $arguments): array
+    {
+        if (count($arguments) >= 5) {
+            list($this->scriptPath, $recipientData, $sender, $subject, $body) = $arguments;
+        } else {
+            list($this->scriptPath, $recipientData, $sender, $subject,) = $arguments;
+            $body = $this->readBodyFromStdIn();
+        }
+
+        $recipients = $this->prepareRecipients($recipientData);
+
+        return array($sender, $subject, $body, $recipients);
     }
 }
