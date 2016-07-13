@@ -41,9 +41,25 @@ use Swift_Transport;
 class Application
 {
     /**
+     * @var BodyFetcher
+     */
+    private $bodyFetcher;
+
+    /**
      * @var string
      */
     private $scriptPath;
+
+    /**
+     * Application constructor.
+     *
+     * @param BodyFetcher $bodyFetcher
+     */
+    public function __construct(BodyFetcher $bodyFetcher = null)
+    {
+        $this->bodyFetcher = $bodyFetcher ?: new BodyFetcher();
+    }
+
 
     /**
      * @param array $arguments
@@ -75,6 +91,7 @@ class Application
     private function sendEmail(array $recipients, string $sender, string $subject, string $body): bool
     {
         $contentType = $this->getSendAsHtml($body) ? 'text/html' : null;
+        /** @var \Swift_Mime_Message $message */
         $message = (new Swift_Message())
             ->setSubject($subject)
             ->setFrom(array($sender => $sender))
@@ -160,47 +177,6 @@ USAGE;
     }
 
     /**
-     * @return string
-     */
-    private function readBodyFromStdIn():string
-    {
-        $body = $this->readBodyFromPipedStdIn();
-        if (!$body) {
-            return $this->readBodyFromTerminal();
-        }
-
-        return $body;
-    }
-
-    private function readBodyFromTerminal()
-    {
-        $this->println('Please type in the message (submit with ctrl-d)');
-        $body = '';
-        while (false !== ($line = fgets(STDIN))) {
-            $body .= $line;
-        }
-
-        return $body;
-    }
-
-    /**
-     * @return string
-     */
-    private function readBodyFromPipedStdIn()
-    {
-        stream_set_blocking(STDIN, false);
-        $body = '';
-        while (false !== ($line = fgets(STDIN))) {
-            $body .= $line;
-        }
-
-        stream_set_blocking(STDIN, true);
-
-        return $body;
-
-    }
-
-    /**
      * @param string $recipientData
      * @return array
      */
@@ -256,7 +232,7 @@ USAGE;
             $body = $this->prepareBody($body);
         } else {
             list($this->scriptPath, $recipientData, $sender, $subject,) = $arguments;
-            $body = $this->readBodyFromStdIn();
+            $body = $this->bodyFetcher->fetchFromStdIn();
         }
 
         $recipients = $this->prepareRecipients($recipientData);
@@ -274,12 +250,12 @@ USAGE;
             $this->println('Download body from "%s"', $body);
             $this->println('');
 
-            return (new BodyFetcher())->fetch($body);
+            return $this->bodyFetcher->fetch($body);
         } elseif (file_exists($body)) {
             $this->println('Send file contents of "%s" as body', $body);
             $this->println('');
 
-            return (new BodyFetcher())->fetch($body);
+            return $this->bodyFetcher->fetch($body);
         }
 
         return $body;

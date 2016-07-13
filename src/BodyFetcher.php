@@ -62,6 +62,19 @@ class BodyFetcher
     }
 
     /**
+     * @return string
+     */
+    public function fetchFromStdIn():string
+    {
+        $body = $this->readBodyFromPipedStdIn();
+        if (!$body) {
+            return $this->readBodyFromTerminal();
+        }
+
+        return $body;
+    }
+
+    /**
      * @param string $url
      * @return string
      */
@@ -86,5 +99,46 @@ class BodyFetcher
         }
 
         return (string)$content;
+    }
+
+    private function readBodyFromTerminal()
+    {
+        $this->println('Please type in the message (submit with ctrl-d)');
+        $body = '';
+        while (false !== ($line = fgets(STDIN))) {
+            $body .= $line;
+        }
+
+        return $body;
+    }
+
+    /**
+     * @return string
+     */
+    private function readBodyFromPipedStdIn()
+    {
+        stream_set_blocking(STDIN, false);
+
+        $body = '';
+        while (false !== ($line = fgets(STDIN))) {
+            $body .= $line;
+        }
+
+        stream_set_blocking(STDIN, true);
+
+        return $body;
+    }
+
+    /**
+     * @param string $format
+     * @param array  ...$variables
+     * @return BodyFetcher
+     */
+    private function println(string $format, ...$variables): self
+    {
+        $format .= PHP_EOL;
+        vprintf($format, $variables);
+
+        return $this;
     }
 }
