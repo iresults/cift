@@ -146,7 +146,17 @@ class Application
      */
     private function printUsage(string $pathToScript)
     {
-        $this->println('Usage: %s recipient sender subject [body]', $pathToScript ?: 'bin/cift');
+        $usage = <<<USAGE
+Usage: %s recipients sender subject [body|uri]
+ 
+ recipients     A single email address or a comma separated list
+ sender         Sender's email address
+ subject        Email subject
+ body           A body string to send (if none is given the body will be read from stdin)
+ uri            If a URI instead of a body is given it will be fetched and sent
+USAGE;
+
+        $this->println($usage, $pathToScript ?: 'bin/cift');
     }
 
     /**
@@ -243,6 +253,7 @@ class Application
     {
         if (count($arguments) >= 5) {
             list($this->scriptPath, $recipientData, $sender, $subject, $body) = $arguments;
+            $body = $this->prepareBody($body);
         } else {
             list($this->scriptPath, $recipientData, $sender, $subject,) = $arguments;
             $body = $this->readBodyFromStdIn();
@@ -251,5 +262,26 @@ class Application
         $recipients = $this->prepareRecipients($recipientData);
 
         return array($sender, $subject, $body, $recipients);
+    }
+
+    /**
+     * @param string $body
+     * @return string
+     */
+    private function prepareBody(string $body): string
+    {
+        if (substr($body, 0, 7) === 'http://' || substr($body, 0, 8) === 'https://') {
+            $this->println('Download body from "%s"', $body);
+            $this->println('');
+
+            return (new BodyFetcher())->fetch($body);
+        } elseif (file_exists($body)) {
+            $this->println('Send file contents of "%s" as body', $body);
+            $this->println('');
+
+            return (new BodyFetcher())->fetch($body);
+        }
+
+        return $body;
     }
 }
